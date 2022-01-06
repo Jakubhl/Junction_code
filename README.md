@@ -266,7 +266,7 @@ digitalWrite(SR12,HIGH);
 }
 
 void loop() {
-Serial.println(foto_sensor);
+
  switch(foto){
   case 0:
     if(aa==0){
