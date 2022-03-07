@@ -1,5 +1,6 @@
 
-´´´c
+
+```c
 
 #include<IRremote.h>
 #include <Wire.h>
@@ -2030,4 +2031,5 @@ switch (loading)
       break;
   }
 }
-´´´
+
+```
