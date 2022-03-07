@@ -258,6 +258,7 @@ byte SR12 = 8;
 //casy pro aktualizaci dat ze spinacu(sw) a senzorů(se)
 byte time_sw = 200;
 byte time_se = 500;
+byte sensor_detect = 100;
 
 void setup() {
 
@@ -301,13 +302,8 @@ void setup() {
   lcd.createChar(4, L_5);
 }
 
-void loop() {
-  
-//Serial.print("sec:");
-  //Serial.print(sec);
-  //Serial.print("tens:");
-  //Serial.print(tens);
-//Serial.print("\n");
+void loop() { 
+
   //veřejné osvětlení------------------------------------------------------------------------------------------------------
 
   switch (foto) {
@@ -868,7 +864,7 @@ switch (loading)
     //čtení senzorů a tlačítek------------------------------------------------------------------------------------------------------
 
     switch (se1s) {
-      case 0: if (sensor1 < 120) {
+      case 0: if (sensor1 < sensor_detect) {
           se1t1 = millis();
           if (traffic_light == 1 && crossing_active == 0) {
             count_A++;
@@ -881,13 +877,13 @@ switch (loading)
           se1s = 2;
         }
         break;
-      case 2: if (sensor1 > 120) {
+      case 2: if (sensor1 > sensor_detect) {
           se1s = 0;
         }
         break;
     }
     switch (se2s) {
-      case 0: if (sensor2 < 120) {
+      case 0: if (sensor2 < sensor_detect) {
           se2t1 = millis();
           if (traffic_light == 1 && crossing_active == 0) {
             count_A++;
@@ -899,13 +895,13 @@ switch (loading)
           se2s = 2;
         }
         break;
-      case 2: if (sensor2 > 120) {
+      case 2: if (sensor2 > sensor_detect) {
           se2s = 0;
         }
         break;
     }
     switch (se3s) {
-      case 0: if (sensor3 < 120) {
+      case 0: if (sensor3 < sensor_detect) {
           se3t1 = millis();
           if (traffic_light == 4) {
             count_B++;
@@ -917,13 +913,13 @@ switch (loading)
           se3s = 2;
         }
         break;
-      case 2: if (sensor3 > 120) {
+      case 2: if (sensor3 > sensor_detect) {
           se3s = 0;
         }
         break;
     }
     switch (se4s) {
-      case 0: if (sensor4 < 120) {
+      case 0: if (sensor4 < sensor_detect) {
           se4t1 = millis();
           if (traffic_light == 4) {
             count_B++;
@@ -935,13 +931,13 @@ switch (loading)
           se4s = 2;
         }
         break;
-      case 2: if (sensor4 > 120) {
+      case 2: if (sensor4 > sensor_detect) {
           se4s = 0;
         }
         break;
     }
     switch (se5s) {
-      case 0: if (sensor5 < 120) {
+      case 0: if (sensor5 < sensor_detect) {
           se5t1 = millis();
           if (traffic_light == 8) {
             count_C++;
@@ -953,13 +949,13 @@ switch (loading)
           se5s = 2;
         }
         break;
-      case 2: if (sensor5 > 120) {
+      case 2: if (sensor5 > sensor_detect) {
           se5s = 0;
         }
         break;
     }
     switch (se6s) {
-      case 0: if (sensor6 < 120) {
+      case 0: if (sensor6 < sensor_detect) {
           se6t1 = millis();
           if (traffic_light == 8) {
             count_C++;
@@ -978,7 +974,7 @@ switch (loading)
           se6s = 2;
         }
         break;
-      case 2: if (sensor6 > 120) {
+      case 2: if (sensor6 > sensor_detect) {
           se6s = 0;
         }
         break;
@@ -987,7 +983,7 @@ switch (loading)
         }
         break;
       //ceka se az vozidlo opusti obe cidla aby se nepricetlo dvakrat
-      case 4: if (ind_sensor < 550 && sensor6 > 120) {
+      case 4: if (ind_sensor < 550 && sensor6 > sensor_detect) {
           se6s = 0;
         }
         break;
@@ -1173,7 +1169,7 @@ switch (loading)
 
       if (reg_B == 0) {
         //if(sensor3<120){reg_B=1;refresh=1;}
-        if (sensor4 < 120) {
+        if (sensor4 < sensor_detect) {
           reg_B = 1;
           refresh = 1;
         }
@@ -1185,7 +1181,7 @@ switch (loading)
       }
       if (reg_C == 0) {
         //if(sensor5<120){reg_C=1;refresh=1;}
-        if (sensor6 < 120) {
+        if (sensor6 < sensor_detect) {
           reg_C = 1;
           refresh = 1;
         }
@@ -1296,7 +1292,7 @@ switch (loading)
         digitalWrite(Y[4], HIGH);
       }
       if (CtoB == 0) {
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
+        digitalWrite(SG3, LOW);digitalWrite(SG4, LOW);digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
       }
       trl442 = millis();
       if (trl442 - trl441 > 2000) {
@@ -1313,11 +1309,11 @@ switch (loading)
       CtoB = 0;
       reg_B = 0;
       if (reg_A == 0) {
-        if (sensor1 < 120) {
+        if (sensor1 < sensor_detect) {
           reg_A = 1;
           refresh = 1;
         }
-        if (sensor2 < 120) {
+        if (sensor2 < sensor_detect) {
           reg_A = 1;
           refresh = 1;
         }
@@ -1331,8 +1327,8 @@ switch (loading)
         }
       }
       if (reg_C == 0) {
-        //if(sensor5<120){reg_C=1;refresh=1;}
-        if (sensor6 < 120) {
+        //if(sensor5<sensor_detect){reg_C=1;refresh=1;}
+        if (sensor6 < sensor_detect) {
           reg_C = 1;
           refresh = 1;
         }
@@ -1347,7 +1343,6 @@ switch (loading)
         }
       }
       if (CtoB == 0) {
-        digitalWrite(SG3, LOW);
         digitalWrite(SG4, LOW);
       }
       digitalWrite(G[3], HIGH);digitalWrite(G[4], HIGH); digitalWrite(SG7, HIGH);
@@ -1413,9 +1408,12 @@ switch (loading)
       if (AtoC == 1) {
         digitalWrite(G[7], LOW);
         digitalWrite(Y[7], HIGH);
+        digitalWrite(SG4, LOW);
+       
       }
       //BtoC
       if (AtoC == 0) {
+        digitalWrite(SG4, LOW);
         digitalWrite(SG7, LOW);
         digitalWrite(G[4], LOW);
         digitalWrite(Y[4], HIGH);
@@ -1429,7 +1427,7 @@ switch (loading)
     case 6: //RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (AtoC == 1) {
-        digitalWrite(SG4, LOW);
+        
         digitalWrite(Y[7], LOW);
         digitalWrite(R[7], HIGH);
       }
@@ -1448,6 +1446,7 @@ switch (loading)
     case 7: //YELLOW + RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (AtoC == 1) {
+        digitalWrite(SG3, LOW);
         digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);
 
       }
@@ -1470,7 +1469,7 @@ switch (loading)
       reg_C = 0;
       AtoC = 0;
       if (reg_A == 0) {
-        if (sensor1 < 120) {
+        if (sensor1 < sensor_detect) {
           reg_A = 1;
           refresh = 1;
         }
@@ -1482,11 +1481,11 @@ switch (loading)
         //if(digitalRead(sw2)==LOW){reg_A=1;refresh=1;}
       }
       if (reg_B == 0) {
-        if (sensor3 < 120) {
+        if (sensor3 < sensor_detect) {
           reg_B = 1;
           refresh = 1;
         }
-        if (sensor4 < 120) {
+        if (sensor4 < sensor_detect) {
           reg_B = 1;
           refresh = 1;
         }
@@ -1557,7 +1556,8 @@ switch (loading)
     case 9: //YELLOW SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (BtoA == 1) {
-        digitalWrite(G[3], LOW);digitalWrite(G[4], LOW); digitalWrite(SG4, HIGH);
+        digitalWrite(SG7, LOW);
+        digitalWrite(G[3], LOW);digitalWrite(G[4], LOW); 
         digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
       }
       if (BtoA == 0) {
@@ -1573,11 +1573,11 @@ switch (loading)
     case 10: //RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (BtoA == 1) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[4], LOW); digitalWrite(SG7, LOW);
+        digitalWrite(Y[3], LOW);digitalWrite(Y[4], LOW);digitalWrite(SG3, HIGH);digitalWrite(SG4, HIGH);
         digitalWrite(R[3], HIGH);digitalWrite(R[4], HIGH);
       }
       if (BtoA == 0) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);  
+        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);digitalWrite(SG3, HIGH);
         digitalWrite(R[3], HIGH);digitalWrite(R[5], HIGH);
       }
       trl102 = millis();
@@ -1588,11 +1588,11 @@ switch (loading)
 
       break;
     case 11://RED + YELLOW SEQUENCE-----------------------------------------------------------------------------------------------------------------------
-      if (BtoA == 1) {
-        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);
+      if (BtoA == 1) { 
+        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);digitalWrite(SG7, LOW);
       }
       if (BtoA == 0) {
-        digitalWrite(Y[7], HIGH);
+        digitalWrite(Y[7], HIGH);digitalWrite(SG7, LOW);
       }
 
       trl112 = millis();
@@ -1749,6 +1749,7 @@ switch (loading)
       }
       if (p3_B == 1) {
         digitalWrite(SG7, LOW);
+        digitalWrite(SG4, LOW);
         digitalWrite(G[4], LOW);
         digitalWrite(Y[4], HIGH);
       }
