@@ -395,7 +395,7 @@ void loop() {
         }
       countdown=countdown+(interval_A-countdown);
       if (countdown != 0 && aa==0) {
-          load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");//-1 kvuli desetinam
+          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}//-1 kvuli desetinam
           cc=0;bb=0;aa=1;
         }
         if (crossing_active == 0) {
@@ -435,7 +435,7 @@ void loop() {
         }
       countdown=countdown+(interval_B-countdown);
       if (countdown != 0 && bb==0) {
-          load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");
+          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
           cc=0;aa=0;bb=1;
         }
         if (crossing_active == 0) {
@@ -475,7 +475,7 @@ void loop() {
       countdown=countdown+(interval_C-countdown); 
       
       if (countdown != 0 && cc==0) {
-          load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");
+          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
           bb=0;aa=0;cc=1;
         }  
         if (crossing_active == 0) {
@@ -1901,8 +1901,10 @@ switch (loading)
       break;
 //konecny stav
     case 8: 
-      clck_down=1;clck_up=0;sec=10;xx=0;mins=0;min_pos=10;sec_pos2=10;   
+      clck_down=1;clck_up=0;sec=10;xx=0;mins=0;min_pos=10;sec_pos2=10; 
+        
       priority = 0; lcd.clear();refresh=1; //reset displeje
+      time_loading = 0; load_pos = 0;loading_state=2;
       waiting_A=0;waiting_B=0;waiting_C=0;finish_A=0;
       aa = 0; bb = 0; cc = 0; ee = 0; //reset vypisu
       p1_A = 0; p1_B = 0; p1_C = 0; //reset nastaveni priority
@@ -2031,5 +2033,4 @@ switch (loading)
       break;
   }
 }
-
 ```
