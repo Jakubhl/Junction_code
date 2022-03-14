@@ -1,12 +1,9 @@
-
-
-```c
-
 #include<IRremote.h>
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 20, 4);
 
+//vlastně definované charaktery pro načítání na displeji
 byte L_1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000,};
 byte L_2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000,};
 byte L_3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100,};
@@ -14,6 +11,7 @@ byte L_4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b
 byte L_5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111,};
 
 byte a;
+byte aa;
 byte b;
 byte bb;
 byte c;
@@ -23,16 +21,17 @@ byte dd;
 byte e;
 byte ee;
 byte xx;
+byte i;
+byte ii;
+byte j;
+byte jj;
 
 byte g;
 byte h;
-byte i;
-byte j;
 byte k;
 byte l;
 byte m;
 byte n;
-
 
 byte loading = 1;
 byte stop_loading;
@@ -41,14 +40,14 @@ byte load_pos;
 byte clck_down = 1;
 byte clck_up;
 byte mins;
-byte sec=10;
+byte sec;
 byte sec2;
 byte tens = 10;
 byte tens2;
 byte sec_pos;
 byte sec_pos2;
-byte min_pos =10;
-int countdown=10;
+byte min_pos = 10;
+int countdown = 10;
 int time_loading;
 unsigned long t_l1;
 unsigned long t_l2;
@@ -82,47 +81,29 @@ int ind_sensor;
 int foto_sensor;
 
 byte traffic_light = 0;
-byte crossing_active = 0;
+byte crossing_active;
 byte cross = 6;
 byte finish_cross4;
-byte finish_A;
-byte foto = 0;
+byte finish_A;byte finish_B;byte finish_C;
+byte foto;
 
-
-float percentage_A;
-float percentage_B;
-float percentage_C;
+float percentage_A;float percentage_B;float percentage_C;
 byte sum;
-byte count_A;
-byte count_B;
-byte count_C;
-float count_A_f;
-float count_B_f;
-float count_C_f;
-byte interval_A;
-int interval_A2;
-byte interval_B;
-int interval_B2;
-byte interval_C;
-int interval_C2;
-float interval_A_f;
-float interval_B_f;
-float interval_C_f;
+byte count_A;byte count_B;byte count_C;
+float count_A_f;float count_B_f;float count_C_f;
+byte interval_A;int interval_A2;
+byte interval_B;int interval_B2;
+byte interval_C;int interval_C2;
+float interval_A_f;float interval_B_f;float interval_C_f;
+byte completed_A;byte completed_B;byte completed_C;
+
 byte refresh = 1;
-byte completed_A;
-byte completed_B;
-byte completed_C;
+byte refresh_ready = 1;
+unsigned long ref_1;
+unsigned long ref_2;
 
-byte aa;
-byte ii;
-byte jj;
-
-byte reg_A;
-byte reg_B;
-byte reg_C;
-byte waiting_A;
-byte waiting_B;
-byte waiting_C;
+byte reg_A;byte reg_B;byte reg_C;
+byte waiting_A;byte waiting_B;byte waiting_C;
 byte AtoC;
 byte BtoA;
 byte CtoB;
@@ -239,11 +220,11 @@ unsigned long tp8;
 
 //konfigurace pinu
 
-byte G[]={0,4,4,52,49,27,31,24};
-byte R[]={0,6,6,50,48,26,32,23};
-byte Y[]={0,5,5,53,47,28,30,25};
-byte W[]={22,44,45};
-byte sw[]={0,36,37,38,39,40,41,42,43};
+byte G[] = {0, 4, 4, 52, 49, 27, 31, 24};
+byte R[] = {0, 6, 6, 50, 48, 26, 32, 23};
+byte Y[] = {0, 5, 5, 53, 47, 28, 30, 25};
+byte W[] = {22, 44, 45};
+byte sw[] = {0, 36, 37, 38, 39, 40, 41, 42, 43};
 byte SG7 = 29;
 byte BOP = 33;
 byte L7OP = 34;
@@ -259,18 +240,19 @@ byte SR12 = 8;
 byte time_sw = 200;
 byte time_se = 500;
 byte sensor_detect = 100;
+byte foto_detect=200;
 
 void setup() {
 
-  
+
   pinMode(W[0], OUTPUT);
   pinMode(W[1], OUTPUT);
   pinMode(W[2], OUTPUT);
-  
-  for(k=0;k<8;k++){
-  pinMode(R[k], OUTPUT);
-  pinMode(G[k], OUTPUT);
-  pinMode(Y[k], OUTPUT);
+
+  for (k = 0; k < 8; k++) {
+    pinMode(R[k], OUTPUT);
+    pinMode(G[k], OUTPUT);
+    pinMode(Y[k], OUTPUT);
   }
   pinMode(SG7, OUTPUT);
   pinMode(BOP, OUTPUT);
@@ -280,10 +262,10 @@ void setup() {
   pinMode(SG3, OUTPUT);
   pinMode(SG12, OUTPUT);
   pinMode(SR12, OUTPUT);
-  
-  for(l=0;l<9;l++){
+
+  for (l = 0; l < 9; l++) {
     pinMode(sw[l], INPUT_PULLUP);
-    }
+  }
   pinMode(swcross1, INPUT_PULLUP);
   pinMode(swcross2, INPUT_PULLUP);
 
@@ -294,7 +276,7 @@ void setup() {
 
   digitalWrite(G[1], HIGH);
   digitalWrite(SR12, HIGH);
-//symboly nacitani config
+  //symboly nacitani config
   lcd.createChar(0, L_1);
   lcd.createChar(1, L_2);
   lcd.createChar(2, L_3);
@@ -302,27 +284,28 @@ void setup() {
   lcd.createChar(4, L_5);
 }
 
-void loop() { 
-
-  //veřejné osvětlení------------------------------------------------------------------------------------------------------
+void loop() {
+                                                      
+  //veřejné osvětlení--------------------------------------------------------------------------------------------------------------
+  //probíhá ujišťování o okolní intenzitě světla po dobu 3 s
 
   switch (foto) {
     case 0:
-      if (aa == 0) {
+      if (dd == 0) { //proti opakování
         digitalWrite(W[0], LOW);
         digitalWrite(W[1], LOW);
         digitalWrite(W[2], LOW);
-      } aa = 1;
+      } dd = 1;
       foto_sensor = analogRead(A0);
-      if (foto_sensor < 200) {
+      if (foto_sensor < foto_detect) {
         foto_t1 = millis();
         foto = 1;
       }
       break;
     case 1:
-      aa = 0;
+      dd = 0;
       foto_sensor = analogRead(A0);
-      if (foto_sensor > 200) {
+      if (foto_sensor > foto_detect) {
         foto = 0;
       }
       foto_t2 = millis();
@@ -332,20 +315,20 @@ void loop() {
       break;
     case 2:
       if (dd == 0) {
-        //digitalWrite(W[0],HIGH);
+        //digitalWrite(W[0],HIGH);  zakomentované, protože otravné
         //digitalWrite(W[1],HIGH);
         //digitalWrite(W[2],HIGH);
       } dd = 1;
       foto_sensor = analogRead(A0);
-      if (foto_sensor > 200) {
+      if (foto_sensor > foto_detect) {
         foto_t3 = millis();
         foto = 3;
       }
       break;
     case 3:
-      aa = 0;
+      dd = 0;
       foto_sensor = analogRead(A0);
-      if (foto_sensor < 200) {
+      if (foto_sensor < foto_detect) {
         foto = 2;
       }
       foto_t4 = millis();
@@ -355,6 +338,7 @@ void loop() {
       break;
   }
   //modra led u ind. senzoru...
+  
   ind_sensor = analogRead(A7);
   if (ind_sensor > 550) {
     digitalWrite(BOP, HIGH);
@@ -363,11 +347,18 @@ void loop() {
     digitalWrite(BOP, LOW);
   }
 
-  // refresh: jen kdyz je treba aktualizovat data na displeji:-----------------------------------------------------------------------------------------------------------------
+//aktualizace displeje maximálně každou půlsekundu:
 
-  if (refresh != 0 && priority == 0) {
+if(refresh_ready==0){  
+  ref_2=millis();
+  if(ref_2-ref_1>300){refresh_ready=1;}
+}
+  // refresh: jen kdyz je treba aktualizovat data na displeji:-----------------------------------------------------------------------------------------------------------------
+  if (refresh != 0 && priority == 0 && refresh_ready==1 && idle==0) { //idle==0 kvůli přechodu, který může přetrvat do idle stavu a spustí refresh (nechceme)
     //lcd.setCursor( 5, 2 );lcd.print("."); v pripade zobrazovani desetin...
     //lcd.setCursor( 9, 2 );lcd.print("s");
+
+    
     sum = count_A + count_B + count_C;
 
     //DIRECTION A:------------------------------------------------------------------------------------------------------
@@ -384,20 +375,26 @@ void loop() {
     } else {
       interval_A = 10;
     }//minimum (10s)
-    
-    if (traffic_light == 1 && emergency==0) {   
-        if(aa==1 && sec!=0){
-        sec+=(interval_A-countdown); 
-        }
-      countdown=countdown+(interval_A-countdown);
-      if (countdown != 0 && aa==0) {
-          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}//-1 kvuli desetinam
-          cc=0;bb=0;aa=1;
-        }
-        if (crossing_active == 0) {
-          lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
-        }
-         
+
+    if (traffic_light == 1 && emergency == 0 ) {
+      
+      if (aa==1 && sec != 0) {
+        sec += (interval_A - countdown); //nutné zde, před počítáním cooldownu
+      }
+   
+      countdown = countdown + (interval_A - countdown); //nutné počítat zde, až po předešlém příkazu
+  
+        if (sec == 0 && countdown != 0 && aa==0) { //proměnná aa kvůli opakování odpočítávání při registraci vozidla v daném směru
+          load_pos = 0;  
+          tens = 10;
+          sec = countdown - 1; //-1 kvuli desetinam
+          lcd.setCursor ( 0, 3 );
+          lcd.print("                    ");
+          cc=0;bb=0;aa=1; 
+          }
+      
+      
+      lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
       lcd.setCursor ( 0, 0 ); lcd.print(">A:");
       lcd.setCursor ( 3, 0 ); lcd.print("     ");
       lcd.setCursor ( 3, 0 ); lcd.print(percentage_A);
@@ -409,7 +406,7 @@ void loop() {
       lcd.setCursor ( 17, 0 ); lcd.print("  ");
       lcd.setCursor ( 17, 0 ); lcd.print(interval_A);
       lcd.setCursor ( 19, 0 ); lcd.print("s");
-             
+
     }
     //DIRECTION B:------------------------------------------------------------------------------------------------------
     count_B_f = count_B;
@@ -425,18 +422,24 @@ void loop() {
     } else {
       interval_B = 10;
     }//minimum (10s)
-    if (traffic_light == 4 && emergency==0) {  
-        if(bb==1 && sec!=0){
-        sec+=(interval_B-countdown);
-        }
-      countdown=countdown+(interval_B-countdown);
-      if (countdown != 0 && bb==0) {
-          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
-          cc=0;aa=0;bb=1;
-        }
-        if (crossing_active == 0) {
-          lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
- }
+    if (traffic_light == 4 && emergency == 0) {
+
+      if (sec != 0 && bb==1) {
+        sec += (interval_B - countdown);
+      }
+      
+      countdown = countdown + (interval_B - countdown);
+      
+        if (sec == 0 && countdown != 0 && bb==0) {
+          load_pos = 0;
+          tens = 10;
+          sec = countdown - 1;
+          lcd.setCursor ( 0, 3 );
+          lcd.print("                    ");
+          aa=0;cc=0;bb=1;
+          }
+      
+      lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
       lcd.setCursor ( 0, 0 ); lcd.print(">B:");
       lcd.setCursor ( 3, 0 ); lcd.print("     ");
       lcd.setCursor ( 3, 0 ); lcd.print(percentage_B);
@@ -448,7 +451,7 @@ void loop() {
       lcd.setCursor ( 17, 0 ); lcd.print("  ");
       lcd.setCursor ( 17, 0 ); lcd.print(interval_B);
       lcd.setCursor ( 19, 0 ); lcd.print("s");
-    
+
     }
     //DIRECTION C:------------------------------------------------------------------------------------------------------
     count_C_f = count_C;
@@ -464,20 +467,24 @@ void loop() {
     } else {
       interval_C = 10;
     }
-    if (traffic_light == 8 && emergency==0) {     
-        if(cc==1 && sec!=0){
-        sec+=(interval_C-countdown);
-        }
-      countdown=countdown+(interval_C-countdown); 
-      
-      if (countdown != 0 && cc==0) {
-          if(sec==0){load_pos=0;tens=10;sec = countdown - 1;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
-          bb=0;aa=0;cc=1;
-        }  
-        if (crossing_active == 0) {
-          lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
+    if (traffic_light == 8 && emergency == 0) {
 
-       }
+      if (sec != 0 && cc==1) {
+        sec += (interval_C - countdown);
+      }
+
+      countdown = countdown + (interval_C - countdown);
+  
+        if (sec == 0 && countdown != 0 && cc==0) {
+          load_pos = 0;
+          tens = 10;
+          sec = countdown - 1;
+          lcd.setCursor ( 0, 3 );
+          lcd.print("                    ");
+          aa=0;bb=0;cc=1;
+          }
+      
+      lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
       lcd.setCursor ( 0, 0 ); lcd.print(">C:");
       lcd.setCursor ( 3, 0 ); lcd.print("     ");
       lcd.setCursor ( 3, 0 ); lcd.print(percentage_C);
@@ -489,103 +496,102 @@ void loop() {
       lcd.setCursor ( 17, 0 ); lcd.print("  ");
       lcd.setCursor ( 17, 0 ); lcd.print(interval_C);
       lcd.setCursor ( 19, 0 ); lcd.print("s");
-    
+
     }
     //dodatečný výpis------------------------------------------------------------------------------------------------------
-    if(emergency==0){
-    lcd.setCursor ( 0, 1 ); lcd.print("A:");
-    lcd.setCursor ( 2, 1 ); lcd.print(reg_A);
-    if (traffic_light == 1) {
-      lcd.setCursor ( 2, 1 );
-      lcd.print("G");
+    if (emergency == 0) {
+      lcd.setCursor ( 0, 1 ); lcd.print("A:");
+      lcd.setCursor ( 2, 1 ); lcd.print(reg_A);
+      if (traffic_light == 1) {
+        lcd.setCursor ( 2, 1 );
+        lcd.print("G");
+      }
+      lcd.setCursor ( 4, 1 ); lcd.print("B:");
+      lcd.setCursor ( 6, 1 ); lcd.print(reg_B);
+      if (traffic_light == 4) {
+        lcd.setCursor ( 6, 1 );
+        lcd.print("G");
+      }
+      lcd.setCursor ( 8, 1 ); lcd.print("C:");
+      lcd.setCursor ( 10, 1 ); lcd.print(reg_C);
+      if (traffic_light == 8) {
+        lcd.setCursor ( 10, 1 );
+        lcd.print("G");
+      }
+      lcd.setCursor ( 12, 1 ); lcd.print("cross:");
+      lcd.setCursor ( 18, 1 ); lcd.print(crossing_active);
+      //lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
+    } else {
+      lcd.setCursor ( 7, 2 );
+      lcd.print(crossing_active);
     }
-    lcd.setCursor ( 4, 1 ); lcd.print("B:");
-    lcd.setCursor ( 6, 1 ); lcd.print(reg_B);
-    if (traffic_light == 4) {
-      lcd.setCursor ( 6, 1 );
-      lcd.print("G");
-    }
-    lcd.setCursor ( 8, 1 ); lcd.print("C:");
-    lcd.setCursor ( 10, 1 ); lcd.print(reg_C);
-    if (traffic_light == 8) {
-      lcd.setCursor ( 10, 1 );
-      lcd.print("G");
-    }
-    lcd.setCursor ( 12, 1 ); lcd.print("cross:");
-    lcd.setCursor ( 18, 1 ); lcd.print(crossing_active);
-    //lcd.setCursor ( 8, 2 ); lcd.print("z"); lcd.setCursor ( 10, 2 ); lcd.print(countdown); lcd.setCursor ( 13, 2 ); lcd.print("s");
-    }else{lcd.setCursor ( 7, 2 ); lcd.print(crossing_active);}
-    
+    refresh_ready=0;
+    ref_1=millis();
     refresh = 0;
   }
+//vypisování pro emergency stav---------------------------------------------------------------------------------------
 
-if (emergency == 1 && priority==0) {
-  if(traffic_light==1 && aa==0){if(sec==0){sec=9;load_pos=0;tens=10;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
-        lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >A ");
-        lcd.setCursor ( 0, 2 ); lcd.print("         ");
-        lcd.setCursor ( 0, 2 ); lcd.print("cross:");lcd.setCursor ( 7, 2 ); lcd.print(crossing_active);lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
-  ee=0;cc=0;bb=0;aa=1;
-  }
-  if(traffic_light==4 && bb==0){if(sec==0){sec=9;load_pos=0;tens=10;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
-        lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >B ");
-        lcd.setCursor ( 0, 2 ); lcd.print("         ");
-        lcd.setCursor ( 0, 2 ); lcd.print("cross:");lcd.setCursor ( 7, 2 ); lcd.print(crossing_active);lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
-  ee=0;cc=0;aa=0;bb=1;
-  }
-  if(traffic_light==8 && cc==0){if(sec==0){sec=9;load_pos=0;tens=10;lcd.setCursor ( 0, 3 ); lcd.print("                    ");}
-        lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >C ");
-        lcd.setCursor ( 0, 2 ); lcd.print("         ");
-        lcd.setCursor ( 0, 2 ); lcd.print("cross:");lcd.setCursor ( 7, 2 ); lcd.print(crossing_active);lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
-  ee=0;aa=0;bb=0;cc=1;    
+  if (emergency == 1 && priority == 0) {
+    if (traffic_light == 1 && aa == 0) {
+      if (sec == 0) {
+        sec = 9;stop_loading=0;
+        load_pos = 0;
+        tens = 10;
+        lcd.setCursor ( 0, 3 );
+        lcd.print("                    ");
       }
-      if (traffic_light != 1 && traffic_light != 4 && traffic_light != 8 && idle == 0 && ee==0) {
+      lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >A ");
+      lcd.setCursor ( 0, 2 ); lcd.print("         ");
+      lcd.setCursor ( 0, 2 ); lcd.print("cross:"); lcd.setCursor ( 7, 2 ); lcd.print(crossing_active); lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
+      ee = 0; cc = 0; bb = 0; aa = 1;
+    }
+    if (traffic_light == 4 && bb == 0) {
+      if (sec == 0) {
+        sec = 9;stop_loading=0;
+        load_pos = 0;
+        tens = 10;
+        lcd.setCursor ( 0, 3 );
+        lcd.print("                    ");
+      }
+      lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >B ");
+      lcd.setCursor ( 0, 2 ); lcd.print("         ");
+      lcd.setCursor ( 0, 2 ); lcd.print("cross:"); lcd.setCursor ( 7, 2 ); lcd.print(crossing_active); lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
+      ee = 0; cc = 0; aa = 0; bb = 1;
+    }
+    if (traffic_light == 8 && cc == 0) {
+      if (sec == 0) {
+        sec = 9;stop_loading=0;
+        load_pos = 0;
+        tens = 10;
+        lcd.setCursor ( 0, 3 );
+        lcd.print("                    ");
+      }
+      lcd.setCursor ( 0, 1 ); lcd.print("Prujezdny stav: >C ");
+      lcd.setCursor ( 0, 2 ); lcd.print("         ");
+      lcd.setCursor ( 0, 2 ); lcd.print("cross:"); lcd.setCursor ( 7, 2 ); lcd.print(crossing_active); lcd.setCursor ( 14, 2 ); lcd.print("z"); lcd.setCursor ( 16, 2 ); lcd.print(countdown); lcd.setCursor ( 19, 2 ); lcd.print("s");
+      ee = 0; aa = 0; bb = 0; cc = 1;
+    }
+    if (traffic_light != 1 && traffic_light != 4 && traffic_light != 8 && idle == 0 && ee == 0) {
       lcd.setCursor ( 0, 1 );
-      lcd.print("Prujezdny stav: -  ");ee=1;    
+      lcd.print("Prujezdny stav: -  "); ee = 1;
+    }
   }
-  if(traffic_light==1 && crossing_active==1){
-        sec=0;
-        }
-  }
-//odpocitavani na displeji jen pokud neprobihaji priority ani necinny stav
-  if (idle == 0 && priority==0) {
-    if (sec2 != sec) {
-      if(emergency==1){
-      lcd.setCursor ( 10, 2 ); lcd.print("  "); //3
-      if (sec < 10) {
-        sec_pos = 11; //4 3
-      } else {
-        sec_pos = 10;
-      } lcd.setCursor ( sec_pos, 2 ); lcd.print(sec);
-      }else{
-        lcd.setCursor ( 4, 2 ); lcd.print("  "); //3
-      if (sec < 10) {
-        sec_pos = 5; //4 3
-      } else {
-        sec_pos = 4;
-      } lcd.setCursor ( sec_pos, 2 ); lcd.print(sec);
-      }
-    }sec2 = sec;
-    
-    //zakomentovana moznost zobrazovani desetin:
-    //if(tens2!=tens){lcd.setCursor ( 6, 2 );lcd.print("  ");
-    //if(tens<10){sec_pos2=7;}else{sec_pos2=6;}lcd.setCursor ( sec_pos2, 2 );lcd.print(tens);}
-    //tens2=tens;
-  }
-//SYMBOL NACITANI---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-switch (loading)
+ 
+  //SYMBOL NACITANI---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  switch (loading)
   {
     case 1:
       if (time_loading == 0) {
         loading_state = 2;
         load_pos = 0;
-      }       
-         if (idle == 0 && stop_loading == 0 && priority==0) {
-          if(traffic_light==1 || traffic_light==4 || traffic_light==8){
-          time_loading = ((countdown-1) * 1000) / 100;//100 stavů na displeji a *1000 milisec, 2 ctverecky nestíhá proto /110
-          t_l1 = millis();loading = 2;
-          }
+      }
+      if (idle == 0 && stop_loading == 0 && priority == 0) {
+        if (traffic_light == 1 || traffic_light == 4 || traffic_light == 8) {
+          time_loading = ((countdown-1) * 1000) / 100; //100 stavů na displeji a *1000 milisec, 2 ctverecky nestíhá proto /110
+          t_l1 = millis(); loading = 2;
         }
-      
+      }
+
       break;
     case 2:
       t_l2 = millis();
@@ -619,7 +625,7 @@ switch (loading)
       } time_loading = ((countdown-1) * 1000) / 100; loading = 1;
       break;
   }
-//ODPOCITAVANI CASU------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  //ODPOCITAVANI CASU------------------------------------------------------------------------------------------------------------------------------------------------------------------------
   switch (clck_down)
   {
     case 1:
@@ -643,35 +649,70 @@ switch (loading)
       break;
   }
 
-//PRICITANI CASU------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-  if(prioritisation==5 || idle==1){
-  switch (clck_up)
-  {
-    case 1:
+  //PRICITANI CASU------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  if (prioritisation == 5 || idle == 1) {
+    switch (clck_up)
+    {
+      case 1:
         tc1 = millis();
         clck_up = 2;
-      break;
+        break;
 
-    case 2:
-      tc2 = millis();
-      if (tc2 - tc1 > 1000) {
-        lcd.setCursor ( sec_pos2-1, 3 ); lcd.print("   ");
+      case 2:
+        tc2 = millis();
+        if (tc2 - tc1 > 1000) {
+          lcd.setCursor ( sec_pos2 - 1, 3 ); lcd.print("   ");
           sec++;
-          if(sec>59){lcd.setCursor ( min_pos-1, 3 ); lcd.print("   ");
-          mins++;sec=0;}
-          
-         clck_up = 1;}
-      
-      break;
-  }
+          if (sec > 59) {
+            lcd.setCursor ( min_pos - 1, 3 ); lcd.print("   ");
+            mins++; sec = 0;
+          }
+
+          clck_up = 1;
+        }
+
+        break;
+    }
   }
   //uvedení do nouzového stavu SP1-----------------------------------------------------------------------------------------------------------------------------------
   //fáze semaforu jdou postupne: A->B->C
   //pouze pokud prave neprobiha prioritizace IZS
+//odpocitavani na displeji jen pokud neprobihaji priority ani necinny stav
+  if (idle == 0 && priority == 0 && stop_loading==0) {
+    if (sec2 != sec) {
+      if (emergency == 1) {
+        if (sec < 10) {
+          sec_pos = 11; //4 3
+        } else {
+          sec_pos = 10;
+        } 
+        lcd.setCursor ( 10, 2 ); lcd.print("  ");
+        lcd.setCursor ( sec_pos, 2 ); lcd.print(sec);
+      } 
+
+       if(emergency==0){ 
+        if (sec < 10) {
+          sec_pos = 5; //4 3
+        } else {
+          sec_pos = 4;
+        }
+        lcd.setCursor ( 4, 2 ); lcd.print("  "); 
+        lcd.setCursor ( sec_pos, 2 ); lcd.print(sec);
+      }
+    sec2 = sec;} 
+
+    //zakomentovana moznost zobrazovani desetin: (sec_pos2 zabrana!)
+    //if(tens2!=tens){lcd.setCursor ( 6, 2 );lcd.print("  ");
+    //if(tens<10){sec_pos2=7;}else{sec_pos2=6;}lcd.setCursor ( sec_pos2, 2 );lcd.print(tens);}
+    //tens2=tens;
+  }
+  
   
   switch (sw8s) {
     case 0: if (digitalRead(sw[8]) == LOW) {
-        sw8t1 = millis(); if(priority==0){emergency++;} digitalWrite(L8OP, HIGH); sw8s = 1;
+        sw8t1 = millis(); if (priority == 0) {
+          emergency++;
+        } digitalWrite(L8OP, HIGH); sw8s = 1;
       }
       break;
     case 1: sw8t2 = millis();
@@ -687,40 +728,41 @@ switch (loading)
   }
 
   if (emergency > 1) {
-    lcd.setCursor ( 0, 0 ); lcd.print("                    ");//aby byl zachovan loading bar necistim cely displej
+    lcd.setCursor ( 0, 0 ); lcd.print("                    ");//aby byl zachován loading bar nečistím celý displej
     lcd.setCursor ( 0, 1 ); lcd.print("                    ");
-    lcd.setCursor ( 0, 2 ); lcd.print("                    "); 
-     waiting_A=0;waiting_B=0;waiting_C=0;finish_A=0;
-      aa = 0; bb = 0; cc = 0; ee = 0; //reset vypisu
-      p1_A = 0; p1_B = 0; p1_C = 0;
-      p2_A = 0; p2_B = 0; p2_C = 0;
-      p3_A = 0; p3_B = 0; p3_C = 0;
-      completed_A=0;completed_B=0;completed_C=0;
-    refresh = 1; e = 0; 
+    lcd.setCursor ( 0, 2 ); lcd.print("                    ");
+    waiting_A = 0; waiting_B = 0; waiting_C = 0; finish_A = 0;
+    aa = 0; bb = 0; cc = 0; ee = 0; //reset vypisu
+    p1_A = 0; p1_B = 0; p1_C = 0;
+    p2_A = 0; p2_B = 0; p2_C = 0;
+    p3_A = 0; p3_B = 0; p3_C = 0;
+    completed_A = 0; completed_B = 0; completed_C = 0;
+    refresh = 1; e = 0;
     if (crossing_active == 0) {
       digitalWrite(G[1], HIGH); digitalWrite(SR12, HIGH);
     }
     emergency = 0;
   }
-//emergency je dulezitejsi nez idle -> premuze jej: idle=0...
-//aa,bb,cc,ee jsou ochrany proti nekonecnemu vypisovani na lcd
-//take se zde nuluje odpocitavani(time_loading, load_pos, sec, loading_state) a odpocitavani primarne nastaveno na 10s
+  //emergency je dulezitejsi nez idle -> premuze jej: idle=0...
+  //aa,bb,cc,ee jsou ochrany proti nekonecnemu vypisovani na lcd
+  //take se zde nuluje odpocitavani(time_loading, load_pos, sec, loading_state) a odpocitavani primarne nastaveno na 10s
   if (emergency == 1) {
     if (e == 0) {
       aa = 0; bb = 0; cc = 0; ee = 0;
-      //time_loading = 0; load_pos = 0; sec = 0; loading_state = 2; tens=10;     
-      idle = 0; countdown = 10;refresh=1;
+      //time_loading = 0; load_pos = 0; sec = 0; loading_state = 2; tens=10;
+      idle = 0; countdown = 10; 
       lcd.setCursor ( 0, 0 ); lcd.print("                    ");//aby byl zachovan loading bar necistim cely displej
       lcd.setCursor ( 0, 1 ); lcd.print("                    ");
       lcd.setCursor ( 0, 2 ); lcd.print("                    ");
       lcd.setCursor ( 4, 0 ); lcd.print("NOUZOVY STAV");
       //lcd.setCursor( 5, 2 );lcd.print(".");
       //lcd.setCursor( 9, 2 );lcd.print("s");
-      e = 1;
+      refresh = 1;e = 1;
     }
-    if (crossing_active == 1 && traffic_light == 1) {
-      lcd.setCursor ( 0, 3 ); lcd.print("preruseno prechodem "); stop_loading = 1;
+    if (crossing_active == 1 && traffic_light == 1) {time_loading = 0; load_pos = 0; loading_state=2;
+      lcd.setCursor ( 0, 3 ); lcd.print("preruseno prechodem "); stop_loading = 1; lcd.setCursor ( 10, 2 ); lcd.print("--"); 
     }
+    
     else {
       if (traffic_light == 4) {
         stop_loading = 0;
@@ -729,7 +771,7 @@ switch (loading)
   }
 
   //RESET-------------------------------------------------------------------------------------------------------------------------------------------
-  //dulezity pri idle stavu
+  //dulezity pri prechod do/z idle stavu
   if (Reset == 1) {
     AtoC = 0; BtoA = 0; CtoB = 0;
     count_A = 0; count_B = 0; count_C = 0;
@@ -739,19 +781,23 @@ switch (loading)
     interval_A2 = 0; interval_B2 = 0; interval_C2 = 0;
     completed_A = 0; completed_B = 0; completed_C = 0;
     waiting_A = 0; waiting_B = 0; waiting_C = 0;
-    reg_A = 0; reg_B = 0; reg_C = 0; finish_A = 0;
+    reg_A = 0; reg_B = 0; reg_C = 0; 
+    finish_A = 0;finish_B = 0;finish_C = 0;
     if (idle == 0) {
       traffic_light = 0;
     }
-    aa = 0; bb = 0; cc = 0; ee = 0;xx=0;
-    time_loading = 0; load_pos = 0;sec_pos = 0; sec_pos2 = 0; sec = 0; loading_state = 2; //tens=10;
-    loading = 1; clck_down = 1;clck_up = 0; mins=0;
-    for(m=3;m<8;m++){
-    digitalWrite(R[m], LOW); digitalWrite(Y[m], LOW); digitalWrite(G[m], LOW); 
+    aa = 0; bb = 0; cc = 0; ee = 0; xx = 0;countdown=10;
+    time_loading = 0; load_pos = 0; sec_pos = 0; sec_pos2 = 0; sec = 0; //sec=0 kvůli použití proměnné pro počítání doby trvaní idle stavu
+    loading_state = 2; loading=1;
+    tens=10;
+    clck_down = 1; clck_up = 0; mins = 0;
+    for (m = 3; m < 8; m++) {
+      digitalWrite(R[m], LOW); digitalWrite(Y[m], LOW); digitalWrite(G[m], LOW);
     }
     digitalWrite(SG3, LOW);
     digitalWrite(SG4, LOW);
     digitalWrite(SG7, LOW);
+    refresh=1;
     Reset = 0;
   }
 
@@ -760,7 +806,7 @@ switch (loading)
   switch (sw7s) {
     case 0: if (digitalRead(sw[7]) == LOW) {
         sw7t1 = millis();
-        if (emergency == 0 && priority==0) {
+        if (emergency == 0 && priority == 0) {
           idle++;
         } digitalWrite(L7OP, HIGH);
         sw7s = 1;
@@ -781,7 +827,7 @@ switch (loading)
   }
 
   if (idle == 1) {
-    b = 0;
+    b = 0; //nulovani jednoho opakovani prikazu u idle=0
     if (d == 0) {
       if (crossing_active == 0) {
         digitalWrite(R[1], LOW);
@@ -796,6 +842,7 @@ switch (loading)
       traffic_light = 12; Reset = 1; lcd.clear(); lcd.setCursor(4, 1 ); lcd.print("NECINNY STAV");
       fl_t1 = millis(); flashing = 1; c = 1;
     }
+    //dve promenne pro ochranu opakovani z duvodu cekani na prechod (d)
   }
 
   //blikání žluté signalizace------------------------------------------------------------------------------------------------------
@@ -804,9 +851,9 @@ switch (loading)
     case 0:
       break;
     case 1:
-    for(m=3;m<8;m++){
-      digitalWrite(Y[m], HIGH);
-    }
+      for (m = 3; m < 8; m++) {
+        digitalWrite(Y[m], HIGH);
+      }
       if (crossing_active == 0) {
         digitalWrite(Y[1], HIGH);
       }
@@ -817,9 +864,9 @@ switch (loading)
       }
       break;
     case 2:
-    for(n=3;n<8;n++){
-      digitalWrite(Y[n], LOW);
-    }
+      for (n = 3; n < 8; n++) {
+        digitalWrite(Y[n], LOW);
+      }
       if (crossing_active == 0) {
         digitalWrite(Y[1], LOW);
       }
@@ -841,8 +888,8 @@ switch (loading)
         digitalWrite(SR12, HIGH);
       }
       lcd.clear(); refresh = 1; waiting_A = 1;
-      for(m=1;m<8;m++){
-      digitalWrite(Y[m], LOW);
+      for (m = 1; m < 8; m++) {
+        digitalWrite(Y[m], LOW);
       }
       flashing = 0; c = 0; d = 0; e = 0; Reset = 1; b = 1;
     }
@@ -851,17 +898,15 @@ switch (loading)
     //d...ochrana proti opakovani zhasnuti LED
     //e...pro spravny prepis disp, pokud nastane: z necinneho do nouzoveho
     //b...ochrana proti opakovani nastaveni pro cinny mod
-
+    
+    //čtení senzorů a tlačítek------------------------------------------------------------------------------------------------------
+    
     sensor1 = analogRead(A4);//1
     sensor2 = analogRead(A1);//2
     sensor3 = analogRead(A2);//3
     sensor4 = analogRead(A3);//4
     sensor5 = analogRead(A5);//5
     sensor6 = analogRead(A6);//6
-
-
-
-    //čtení senzorů a tlačítek------------------------------------------------------------------------------------------------------
 
     switch (se1s) {
       case 0: if (sensor1 < sensor_detect) {
@@ -1135,8 +1180,115 @@ switch (loading)
         break;
     }
   }
-  //sekvence řízení ------------------------------------------------------------------------------------------------------
+  //snímání požadavku z jiných směrů...-----------------------------------------------------------------------------------------------------------------------
+  //spínači i čidly -> jsou zohledněné doplňkové šipky -> kde projíždějí vozidla na zelenou, není registrován požadavek
+  //zakomentované senzory mají vyklizovací šipkou zelenou
+  //tímto způsobem se získávájí nejaktuálnější data
+  //pro směr A:
 
+  if (traffic_light == 0 || traffic_light == 1 || traffic_light == 9 || traffic_light == 10 || traffic_light == 11) {
+    if (reg_B == 0) {
+      //if(sensor3<sensor_detect){reg_B=1;refresh=1;}
+      if (sensor4 < sensor_detect) {
+        reg_B = 1;
+        refresh = 1;
+      }
+      //if(digitalRead(sw3)==LOW){reg_B=1;refresh=1;}
+      if (digitalRead(sw[4]) == LOW) {
+        reg_B = 1;
+        refresh = 1;
+      }
+    }
+    if (reg_C == 0) {
+      //if(sensor5<sensor_detect){reg_C=1;refresh=1;}
+      if (sensor6 < sensor_detect) {
+        reg_C = 1;
+        refresh = 1;
+      }
+      if (ind_sensor > 550) {
+        reg_C = 1;
+        refresh = 1;
+      }
+      //if(digitalRead(sw5)==LOW){reg_C=1;refresh=1;}
+      if (digitalRead(sw[6]) == LOW) {
+        reg_C = 1;
+        refresh = 1;
+      }
+    }
+  }
+  //detekce pro směr B
+  if (traffic_light == 2 || traffic_light == 3 || traffic_light == 4 || traffic_light == 44) {
+    if (reg_A == 0) {
+      if (sensor1 < sensor_detect) {
+        reg_A = 1;
+        refresh = 1;
+      }
+      if (sensor2 < sensor_detect) {
+        reg_A = 1;
+        refresh = 1;
+      }
+      if (digitalRead(sw[1]) == LOW) {
+        reg_A = 1;
+        refresh = 1;
+      }
+      if (digitalRead(sw[2]) == LOW) {
+        reg_A = 1;
+        refresh = 1;
+      }
+    }
+    if (reg_C == 0) {
+      //if(sensor5<sensor_detect){reg_C=1;refresh=1;}
+      if (sensor6 < sensor_detect) {
+        reg_C = 1;
+        refresh = 1;
+      }
+      if (ind_sensor > 550) {
+        reg_C = 1;
+        refresh = 1;
+      }
+      //if(digitalRead(sw5)==LOW){reg_C=1;refresh=1;}
+      if (digitalRead(sw[6]) == LOW) {
+        reg_C = 1;
+        refresh = 1;
+      }
+    }
+  }
+  //detekce pro směr C
+  if (traffic_light == 5 || traffic_light == 6 || traffic_light == 7 || traffic_light == 8) {
+    if (reg_A == 0) {
+      if (sensor1 < sensor_detect) {
+        reg_A = 1;
+        refresh = 1;
+      }
+      //if(sensor2<sensor_detect){reg_A=1;refresh=1;}
+      if (digitalRead(sw[1]) == LOW) {
+        reg_A = 1;
+        refresh = 1;
+      }
+      //if(digitalRead(sw2)==LOW){reg_A=1;refresh=1;}
+    }
+    if (reg_B == 0) {
+      if (sensor3 < sensor_detect) {
+        reg_B = 1;
+        refresh = 1;
+      }
+      if (sensor4 < sensor_detect) {
+        reg_B = 1;
+        refresh = 1;
+      }
+      if (digitalRead(sw[3]) == LOW) {
+        reg_B = 1;
+        refresh = 1;
+      }
+      if (digitalRead(sw[4]) == LOW) {
+        reg_B = 1;
+        refresh = 1;
+      }
+    }
+  }
+
+  //sekvence řízení ----------------------------------------------------------------------------------------------------------------------------------------------------
+  //umozneno preskakovat mezi jednotlivými stavy, zohlednovat prechod pres skutecnost zadne detekce vozidel, prizpusobeny interval aktualnimu provozu
   switch (traffic_light) {
     //SMER A:
     case 0:
@@ -1151,50 +1303,19 @@ switch (loading)
       break;
     case 1: //GREEN DIRECTION A-----------------------------------------------------------------------------------------------------------------------
 
-      //zakomentované pro vypmuni semaforu 6 s prechodem (zbytecne)
       if (finish_A == 0) {
+        refresh=1;
         reg_A = 0;
-        //if(crossing_active==0){digitalWrite(G6,HIGH);digitalWrite(R6,LOW);}else{digitalWrite(G6,LOW);if(BtoA==1){digitalWrite(R6,HIGH);}}
-        digitalWrite(G[6], HIGH);digitalWrite(G[7], HIGH); digitalWrite(SG4, HIGH); digitalWrite(SG3, HIGH);
-        digitalWrite(Y[6], LOW);digitalWrite(Y[7], LOW);
-        digitalWrite(R[3], HIGH);digitalWrite(R[4], HIGH);digitalWrite(R[5], HIGH);
-        digitalWrite(R[6], LOW);digitalWrite(R[7], LOW);
+        digitalWrite(G[6], HIGH); digitalWrite(G[7], HIGH); digitalWrite(SG4, HIGH); digitalWrite(SG3, HIGH);
+        digitalWrite(Y[6], LOW); digitalWrite(Y[7], LOW);
+        digitalWrite(R[3], HIGH); digitalWrite(R[4], HIGH); digitalWrite(R[5], HIGH);
+        digitalWrite(R[6], LOW); digitalWrite(R[7], LOW);
         finish_A = 1;
       }
       if (crossing_active == 0) {
         BtoA = 0;
       }
 
-      //registrovani vozidel z jiných směrů, zakomentované senzory mají vyklizovací šipkou zelenou
-
-      if (reg_B == 0) {
-        //if(sensor3<120){reg_B=1;refresh=1;}
-        if (sensor4 < sensor_detect) {
-          reg_B = 1;
-          refresh = 1;
-        }
-        //if(digitalRead(sw3)==LOW){reg_B=1;refresh=1;}
-        if (digitalRead(sw[4]) == LOW) {
-          reg_B = 1;
-          refresh = 1;
-        }
-      }
-      if (reg_C == 0) {
-        //if(sensor5<120){reg_C=1;refresh=1;}
-        if (sensor6 < sensor_detect) {
-          reg_C = 1;
-          refresh = 1;
-        }
-        if (ind_sensor > 550) {
-          reg_C = 1;
-          refresh = 1;
-        }
-        //if(digitalRead(sw5)==LOW){reg_C=1;refresh=1;}
-        if (digitalRead(sw[6]) == LOW) {
-          reg_C = 1;
-          refresh = 1;
-        }
-      }
       if (crossing_active == 0) {
         trl02 = millis();
         //osetreni proti maximalnimu intervalu na zacatku (první zelená v danem smeru, krizovatka se jeste uci)
@@ -1206,7 +1327,7 @@ switch (loading)
         if (trl02 - trl01 > interval_A2) {
           if (emergency == 1) {
             trl11 = millis();
-            traffic_light = 2;
+            finish_A=0;traffic_light = 2;
           }
           else {
             waiting_A = 1;
@@ -1224,7 +1345,7 @@ switch (loading)
             AtoC = 1;
             count_B = 0;
             refresh = 1;
-            traffic_light = 5;
+            finish_A = 0;traffic_light = 5;
           }
         }
         if (reg_B == 1 && reg_C == 0) {
@@ -1234,7 +1355,7 @@ switch (loading)
             waiting_A = 0;
             trl11 = millis();
             AtoC = 0;
-            traffic_light = 2;
+            finish_A = 0;traffic_light = 2;
           }
         }
         if (reg_B == 1 && reg_C == 1) {
@@ -1244,7 +1365,7 @@ switch (loading)
             waiting_A = 0;
             trl11 = millis();
             AtoC = 0;
-            traffic_light = 2;
+            finish_A = 0;traffic_light = 2;
           }
         }
       }
@@ -1253,14 +1374,14 @@ switch (loading)
     case 2: //YELLOW SEQUENCE-----------------------------------------------------------------------------------------------------------------------
       //mohu dvěma směry bud z A do B (CtoB==0) nebo z C preskocit A do B (CtoB==1)
 
-      finish_A = 0;
+      
       if (CtoB == 1) {
-        digitalWrite(G[5], LOW);digitalWrite(G[6], LOW);
-        digitalWrite(Y[5], HIGH);digitalWrite(Y[6], HIGH);
+        digitalWrite(G[5], LOW); digitalWrite(G[6], LOW);
+        digitalWrite(Y[5], HIGH); digitalWrite(Y[6], HIGH);
       }
       if (CtoB == 0) {
-        digitalWrite(G[6], LOW);digitalWrite(G[7], LOW);
-        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);
+        digitalWrite(G[6], LOW); digitalWrite(G[7], LOW);
+        digitalWrite(Y[6], HIGH); digitalWrite(Y[7], HIGH);
       }
 
       trl12 = millis();
@@ -1272,12 +1393,12 @@ switch (loading)
     case 3: //RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (CtoB == 1) {
-        digitalWrite(Y[5], LOW);digitalWrite(Y[6], LOW);
-        digitalWrite(R[5], HIGH);digitalWrite(R[6], HIGH);
+        digitalWrite(Y[5], LOW); digitalWrite(Y[6], LOW);
+        digitalWrite(R[5], HIGH); digitalWrite(R[6], HIGH);
       }
       if (CtoB == 0) {
-        digitalWrite(Y[6], LOW);digitalWrite(Y[7], LOW);
-        digitalWrite(R[6], HIGH);digitalWrite(R[7], HIGH);
+        digitalWrite(Y[6], LOW); digitalWrite(Y[7], LOW);
+        digitalWrite(R[6], HIGH); digitalWrite(R[7], HIGH);
       }
       //pocita to s jednim autem kdyz bylo zaregistrovano
       trl22 = millis();
@@ -1292,7 +1413,7 @@ switch (loading)
         digitalWrite(Y[4], HIGH);
       }
       if (CtoB == 0) {
-        digitalWrite(SG3, LOW);digitalWrite(SG4, LOW);digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
+         digitalWrite(Y[3], HIGH); digitalWrite(Y[4], HIGH);
       }
       trl442 = millis();
       if (trl442 - trl441 > 2000) {
@@ -1308,48 +1429,16 @@ switch (loading)
     case 4: //GREEN DIRECTION B-----------------------------------------------------------------------------------------------------------------------
       CtoB = 0;
       reg_B = 0;
-      if (reg_A == 0) {
-        if (sensor1 < sensor_detect) {
-          reg_A = 1;
-          refresh = 1;
-        }
-        if (sensor2 < sensor_detect) {
-          reg_A = 1;
-          refresh = 1;
-        }
-        if (digitalRead(sw[1]) == LOW) {
-          reg_A = 1;
-          refresh = 1;
-        }
-        if (digitalRead(sw[2]) == LOW) {
-          reg_A = 1;
-          refresh = 1;
-        }
-      }
-      if (reg_C == 0) {
-        //if(sensor5<sensor_detect){reg_C=1;refresh=1;}
-        if (sensor6 < sensor_detect) {
-          reg_C = 1;
-          refresh = 1;
-        }
-        if (ind_sensor > 550) {
-          reg_C = 1;
-          refresh = 1;
-        }
-        //if(digitalRead(sw5)==LOW){reg_C=1;refresh=1;}
-        if (digitalRead(sw[6]) == LOW) {
-          reg_C = 1;
-          refresh = 1;
-        }
-      }
+      if(finish_B==0){
       if (CtoB == 0) {
-        digitalWrite(SG4, LOW);
+        digitalWrite(SG4, LOW);digitalWrite(SG3, LOW);
       }
-      digitalWrite(G[3], HIGH);digitalWrite(G[4], HIGH); digitalWrite(SG7, HIGH);
-      digitalWrite(Y[3], LOW);digitalWrite(Y[4], LOW);
-      digitalWrite(R[3], LOW);digitalWrite(R[4], LOW);
+      digitalWrite(G[3], HIGH); digitalWrite(G[4], HIGH); digitalWrite(SG7, HIGH);
+      digitalWrite(Y[3], LOW); digitalWrite(Y[4], LOW);
+      digitalWrite(R[3], LOW); digitalWrite(R[4], LOW);
+      finish_B=1;}
+      
       trl32 = millis();
-
       if (completed_B == 1 && emergency == 0) {
         interval_B2 = (interval_B * 1000);
       } else {
@@ -1358,7 +1447,7 @@ switch (loading)
       if (trl32 - trl31 > interval_B2) {
         if (emergency == 1) {
           trl41 = millis();
-          traffic_light = 5;
+          finish_B=0;traffic_light = 5;
         }
         else {
           waiting_B = 1;
@@ -1373,7 +1462,7 @@ switch (loading)
           BtoA = 1;
           count_C = 0;
           refresh = 1;
-          traffic_light = 9;
+          finish_B=0;traffic_light = 9;
         }
         if (crossing_active == 1 && reg_C == 0) {
           completed_B = 1;
@@ -1382,34 +1471,34 @@ switch (loading)
           BtoA = 1;
           count_C = 0;
           refresh = 1;
-          traffic_light = 9;
+          finish_B=0;traffic_light = 9;
         }
         if (reg_C == 1 && reg_A == 0) {
           completed_B = 1;
           waiting_B = 0;
           trl41 = millis();
           BtoA = 0;
-          traffic_light = 5;
+          finish_B=0;traffic_light = 5;
         }
         if (reg_C == 1 && reg_A == 1) {
           completed_B = 1;
           waiting_B = 0;
           trl41 = millis();
           BtoA = 0;
-          traffic_light = 5;
+          finish_B=0;traffic_light = 5;
         }
       }
 
       break;
     case 5: //YELLOW SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
-      finish_A = 0;
+      
 
       if (AtoC == 1) {
         digitalWrite(G[7], LOW);
         digitalWrite(Y[7], HIGH);
         digitalWrite(SG4, LOW);
-       
+
       }
       //BtoC
       if (AtoC == 0) {
@@ -1427,7 +1516,7 @@ switch (loading)
     case 6: //RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (AtoC == 1) {
-        
+
         digitalWrite(Y[7], LOW);
         digitalWrite(R[7], HIGH);
       }
@@ -1447,11 +1536,11 @@ switch (loading)
 
       if (AtoC == 1) {
         digitalWrite(SG3, LOW);
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[5], HIGH);
 
       }
       if (AtoC == 0) {
-        digitalWrite(Y[5], HIGH);digitalWrite(Y[6], HIGH);
+        digitalWrite(Y[5], HIGH); digitalWrite(Y[6], HIGH);
       }
       trl72 = millis();
       if (trl72 - trl71 > 2000) {
@@ -1468,41 +1557,12 @@ switch (loading)
 
       reg_C = 0;
       AtoC = 0;
-      if (reg_A == 0) {
-        if (sensor1 < sensor_detect) {
-          reg_A = 1;
-          refresh = 1;
-        }
-        //if(sensor2<120){reg_A=1;refresh=1;}
-        if (digitalRead(sw[1]) == LOW) {
-          reg_A = 1;
-          refresh = 1;
-        }
-        //if(digitalRead(sw2)==LOW){reg_A=1;refresh=1;}
-      }
-      if (reg_B == 0) {
-        if (sensor3 < sensor_detect) {
-          reg_B = 1;
-          refresh = 1;
-        }
-        if (sensor4 < sensor_detect) {
-          reg_B = 1;
-          refresh = 1;
-        }
-        if (digitalRead(sw[3]) == LOW) {
-          reg_B = 1;
-          refresh = 1;
-        }
-        if (digitalRead(sw[4]) == LOW) {
-          reg_B = 1;
-          refresh = 1;
-        }
-      }
-
-      digitalWrite(G[3], HIGH);digitalWrite(G[5], HIGH);digitalWrite(G[6], HIGH); digitalWrite(SG3, LOW);
-      digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);digitalWrite(Y[6], LOW);
-      digitalWrite(R[3], LOW);digitalWrite(R[5], LOW);digitalWrite(R[6], LOW);
-
+      if(finish_C==0){
+      digitalWrite(G[3], HIGH); digitalWrite(G[5], HIGH); digitalWrite(G[6], HIGH); digitalWrite(SG3, LOW);
+      digitalWrite(Y[3], LOW); digitalWrite(Y[5], LOW); digitalWrite(Y[6], LOW);
+      digitalWrite(R[3], LOW); digitalWrite(R[5], LOW); digitalWrite(R[6], LOW);
+      finish_C=1;}
+      
       trl82 = millis();
       if (completed_C == 1 && emergency == 0) {
         interval_C2 = (interval_C * 1000);
@@ -1512,13 +1572,12 @@ switch (loading)
       if (trl82 - trl81 > interval_C2) {
         if (emergency == 1) {
           trl91 = millis();
-          traffic_light = 9;
+          finish_C=0;traffic_light = 9;
         }
         else {
           waiting_C = 1;
         }
       }
-
 
       if (waiting_C == 1) {
         if (reg_B == 1 && reg_A == 0) {
@@ -1528,28 +1587,28 @@ switch (loading)
           CtoB = 1;
           count_A = 0;
           refresh = 1;
-          traffic_light = 2;
+          finish_C=0;traffic_light = 2;
         }
         if (reg_A == 1 && reg_B == 0) {
           completed_C = 1;
           waiting_C = 0;
           trl91 = millis();
           CtoB = 0;
-          traffic_light = 9;
+          finish_C=0;traffic_light = 9;
         }
         if (reg_A == 1 && reg_B == 1) {
           completed_C = 1;
           waiting_C = 0;
           trl91 = millis();
           CtoB = 0;
-          traffic_light = 9;
+          finish_C=0;traffic_light = 9;
         }
         if (crossing_active == 1) {
           completed_C = 1;
           waiting_C = 0;
           trl91 = millis();
           CtoB = 0;
-          traffic_light = 9;
+          finish_C=0;traffic_light = 9;
         }
       }
       break;
@@ -1557,12 +1616,12 @@ switch (loading)
 
       if (BtoA == 1) {
         digitalWrite(SG7, LOW);
-        digitalWrite(G[3], LOW);digitalWrite(G[4], LOW); 
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
+        digitalWrite(G[3], LOW); digitalWrite(G[4], LOW);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[4], HIGH);
       }
       if (BtoA == 0) {
-        digitalWrite(G[3], LOW);digitalWrite(G[5], LOW);
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);
+        digitalWrite(G[3], LOW); digitalWrite(G[5], LOW);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[5], HIGH);
       }
       trl92 = millis();
       if (trl92 - trl91 > 3000) {
@@ -1573,12 +1632,12 @@ switch (loading)
     case 10: //RED SEQUENCE-----------------------------------------------------------------------------------------------------------------------
 
       if (BtoA == 1) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[4], LOW);digitalWrite(SG3, HIGH);digitalWrite(SG4, HIGH);
-        digitalWrite(R[3], HIGH);digitalWrite(R[4], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[4], LOW); digitalWrite(SG3, HIGH); digitalWrite(SG4, HIGH);
+        digitalWrite(R[3], HIGH); digitalWrite(R[4], HIGH);
       }
       if (BtoA == 0) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);digitalWrite(SG3, HIGH);
-        digitalWrite(R[3], HIGH);digitalWrite(R[5], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[5], LOW); digitalWrite(SG3, HIGH);
+        digitalWrite(R[3], HIGH); digitalWrite(R[5], HIGH);
       }
       trl102 = millis();
       if (trl102 - trl101 > 1000) {
@@ -1588,11 +1647,11 @@ switch (loading)
 
       break;
     case 11://RED + YELLOW SEQUENCE-----------------------------------------------------------------------------------------------------------------------
-      if (BtoA == 1) { 
-        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);digitalWrite(SG7, LOW);
+      if (BtoA == 1) {
+        digitalWrite(Y[6], HIGH); digitalWrite(Y[7], HIGH); digitalWrite(SG7, LOW);
       }
       if (BtoA == 0) {
-        digitalWrite(Y[7], HIGH);digitalWrite(SG7, LOW);
+        digitalWrite(Y[7], HIGH); digitalWrite(SG7, LOW);
       }
 
       trl112 = millis();
@@ -1604,111 +1663,120 @@ switch (loading)
       //idle state
       break;
   }
-//KONFIGURACE OVLADAČE---------------------------------------------------------------------------------------------------------------------------------------
+  //KONFIGURACE OVLADAČE---------------------------------------------------------------------------------------------------------------------------------------
 
   if (IrReceiver.decode()) {
     IrReceiver.resume();
-//vypinani/ preruseni priority, muze pokracovat jen pokud vse dokonano
-    if (IrReceiver.decodedIRData.command == 0x45) { 
-      if(prioritisation==5 && priority !=0){
-      prioritisation = 6;
-      }     
+    //vypinani/ preruseni priority, muze pokracovat jen pokud vse dokonano
+    if (IrReceiver.decodedIRData.command == 0x45) {
+      if (prioritisation == 5 && priority != 0) {
+       prioritisation = 6;
+      }
     }
-//pouze pokud prave neprobiha prioritizace...
-    if (prioritisation == 5 && idle==0 && priority==0) { 
+    //pouze pokud prave neprobiha prioritizace...
+    if (prioritisation == 5 && idle == 0 && priority == 0) {
       if (IrReceiver.decodedIRData.command == 0xC) {
-        refresh=1;loading = 1; prioritisation = 0; priority = 1;
+        refresh = 1; prioritisation = 0; priority = 1;
       }
       if (IrReceiver.decodedIRData.command == 0x18) {
-        refresh=1;loading = 1; prioritisation = 0; priority = 2;
+        refresh = 1; prioritisation = 0; priority = 2;
       }
       if (IrReceiver.decodedIRData.command == 0x5E) {
-        refresh=1;loading = 1; prioritisation = 0; priority = 3;
+        refresh = 1; prioritisation = 0; priority = 3;
       }
     }
   }
 
-  if(priority!=0 || idle==1){
-    if(xx==0){
-      clck_down=0;clck_up=1;sec=0;
-      if(idle==0){
-      lcd.setCursor ( 6, 2 ); lcd.print("cross:");lcd.setCursor ( 13, 2 ); lcd.print(crossing_active);
-      lcd.clear(); lcd.setCursor ( 2, 0 ); lcd.print("Prioritizace IZS");
+  if (priority != 0 || idle == 1) {
+    if (xx == 0) {
+      loading=1; clck_down = 0; clck_up = 1; sec = 0;
+      if (idle == 0) {
+        lcd.setCursor ( 6, 2 ); lcd.print("cross:"); lcd.setCursor ( 13, 2 ); lcd.print(crossing_active);
+        lcd.clear(); lcd.setCursor ( 2, 0 ); lcd.print("Prioritizace IZS");
       }
       lcd.setCursor ( 0, 3 ); lcd.print("po dobu:");
-      sec_pos2=10;
-      xx=1;
+      sec_pos2 = 10;
+      xx = 1;
+    }
+    //stav prechodu zobrazujeme jen kdyz neni necinny stav
+    if (refresh != 0) {
+      if(idle==0){
+      lcd.setCursor ( 6, 2 ); lcd.print("cross:"); lcd.setCursor ( 13, 2 ); lcd.print(crossing_active);
       }
-    if(refresh!=0){
-      lcd.setCursor ( 6, 2 ); lcd.print("cross:");lcd.setCursor ( 13, 2 ); lcd.print(crossing_active);
-      refresh=0;
-      }
+      refresh = 0; 
+    }
 
-    if(sec<10 && mins==0){sec_pos2=10;
-    lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
-    lcd.setCursor ( 12, 3 ); lcd.print("s");
+    if (sec < 10 && mins == 0) {
+      sec_pos2 = 10;
+      lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
+      lcd.setCursor ( 12, 3 ); lcd.print("s");
     }
-    if(sec>9 && mins==0){sec_pos2=9;
-    lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
-    lcd.setCursor ( 12, 3 ); lcd.print("s");
+    if (sec > 9 && mins == 0) {
+      sec_pos2 = 9;
+      lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
+      lcd.setCursor ( 12, 3 ); lcd.print("s");
     }
-    if(sec>9 && mins!=0){sec_pos2=16;
-    lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
-    lcd.setCursor ( 19, 3 ); lcd.print("s");
+    if (sec > 9 && mins != 0) {
+      sec_pos2 = 16;
+      lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
+      lcd.setCursor ( 19, 3 ); lcd.print("s");
     }
-    if(sec<10 && mins!=0){sec_pos2=17;
-    lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
-    lcd.setCursor ( 19, 3 ); lcd.print("s");
+    if (sec < 10 && mins != 0) {
+      sec_pos2 = 17;
+      lcd.setCursor ( sec_pos2, 3 ); lcd.print(sec);
+      lcd.setCursor ( 19, 3 ); lcd.print("s");
     }
-    if(mins>9){min_pos=9;}
-    if(mins!=0){
-    lcd.setCursor ( min_pos, 3 ); lcd.print(mins);
-    lcd.setCursor ( 12, 3 ); lcd.print("min");
+    if (mins > 9) {
+      min_pos = 9;
     }
+    if (mins != 0) {
+      lcd.setCursor ( min_pos, 3 ); lcd.print(mins);
+      lcd.setCursor ( 12, 3 ); lcd.print("min");
     }
+  }
 
   //PRIORITIZACE IZS------------------------------------------------------------------------------------------------------------------------------------------
   //nejprve se navaze, potom se prispusobuji led tak aby byl prujezdny stav pouze v jednom smeru
   switch (prioritisation) {
     case 0:
-      
+
       if (priority == 1 && traffic_light == 1) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru A");
-        tp1 = millis(); p1_A = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p1_A = 1;  if(finish_A==1){traffic_light = 12;prioritisation = 1;} //když nebyla tato podmínka nestihly se přepnout LEDky
       }//A
       if (priority == 1 && traffic_light == 4) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru A");
-        tp1 = millis(); p1_B = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p1_B = 1;  if(finish_B==1){traffic_light = 12;prioritisation = 1;}
       }//B
       if (priority == 1 && traffic_light == 8) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru A");
-        tp1 = millis(); p1_C = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p1_C = 1;  if(finish_C==1){traffic_light = 12;prioritisation = 1;}
       }//C
 
       if (priority == 2 && traffic_light == 1) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru B");
-        tp1 = millis(); p2_A = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p2_A = 1;  if(finish_A==1){traffic_light = 12;prioritisation = 1;}
       }
       if (priority == 2 && traffic_light == 4) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru B");
-        tp1 = millis(); p2_B = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p2_B = 1;  if(finish_B==1){traffic_light = 12;prioritisation = 1;}
       }
       if (priority == 2 && traffic_light == 8) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru B");
-        tp1 = millis(); p2_C = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p2_C = 1;  if(finish_C==1){traffic_light = 12;prioritisation = 1;}
       }
 
       if (priority == 3 && traffic_light == 1) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru C");
-        tp1 = millis(); p3_A = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p3_A = 1;  if(finish_A==1){traffic_light = 12;prioritisation = 1;}
       }
       if (priority == 3 && traffic_light == 4) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru C");
-        tp1 = millis(); p3_B = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p3_B = 1;  if(finish_B==1){traffic_light = 12;prioritisation = 1;}
       }
       if (priority == 3 && traffic_light == 8) {
         lcd.setCursor ( 1, 1 ); lcd.print("Prijezd ze smeru C");
-        tp1 = millis(); p3_C = 1; traffic_light = 12; prioritisation = 1;
+        tp1 = millis(); p3_C = 1;  if(finish_C==1){traffic_light = 12;prioritisation = 1;}
       }
 
       break;
@@ -1718,34 +1786,34 @@ switch (loading)
         digitalWrite(SG4, LOW);
       }
       if (p1_B == 1) {
-        digitalWrite(G[3], LOW);digitalWrite(G[4], LOW);
+        digitalWrite(G[3], LOW); digitalWrite(G[4], LOW);
         digitalWrite(SG7, LOW);
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[4], HIGH);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[4], HIGH);
       }
       if (p1_C == 1) {
-        digitalWrite(G[3], LOW);digitalWrite(G[5], LOW);
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);
+        digitalWrite(G[3], LOW); digitalWrite(G[5], LOW);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[5], HIGH);
       }
       if (p2_A == 1) {
-        digitalWrite(G[6], LOW);digitalWrite(G[7], LOW);
-        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);
+        digitalWrite(G[6], LOW); digitalWrite(G[7], LOW);
+        digitalWrite(Y[6], HIGH); digitalWrite(Y[7], HIGH);
         digitalWrite(SG3, LOW);
         digitalWrite(SG4, LOW);
-        
+
       }
       if (p2_B == 1) {
         digitalWrite(G[3], LOW);
         digitalWrite(Y[3], HIGH);
       }
       if (p2_C == 1) {
-        digitalWrite(G[3], LOW);digitalWrite(G[5], LOW);digitalWrite(G[6], LOW);
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);digitalWrite(Y[6], HIGH);
+        digitalWrite(G[3], LOW); digitalWrite(G[5], LOW); digitalWrite(G[6], LOW);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[5], HIGH); digitalWrite(Y[6], HIGH);
       }
       if (p3_A == 1) {
         digitalWrite(SG3, LOW);
         digitalWrite(SG4, LOW);
-        digitalWrite(G[6], LOW);digitalWrite(G[7], LOW);
-        digitalWrite(Y[6], HIGH);digitalWrite(Y[7], HIGH);
+        digitalWrite(G[6], LOW); digitalWrite(G[7], LOW);
+        digitalWrite(Y[6], HIGH); digitalWrite(Y[7], HIGH);
       }
       if (p3_B == 1) {
         digitalWrite(SG7, LOW);
@@ -1767,28 +1835,28 @@ switch (loading)
     case 2:
       //if(p1_A==1){}
       if (p1_B == 1) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[4], LOW);
-        digitalWrite(R[3], HIGH);digitalWrite(R[4], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[4], LOW);
+        digitalWrite(R[3], HIGH); digitalWrite(R[4], HIGH);
       }
       if (p1_C == 1) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);
-        digitalWrite(R[3], HIGH);digitalWrite(R[5], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[5], LOW);
+        digitalWrite(R[3], HIGH); digitalWrite(R[5], HIGH);
       }
       if (p2_A == 1) {
-        digitalWrite(Y[6], LOW);digitalWrite(Y[7], LOW);
-        digitalWrite(R[6], HIGH);digitalWrite(R[7], HIGH);
+        digitalWrite(Y[6], LOW); digitalWrite(Y[7], LOW);
+        digitalWrite(R[6], HIGH); digitalWrite(R[7], HIGH);
       }
       if (p2_B == 1) {
         digitalWrite(Y[3], LOW);
         digitalWrite(R[3], HIGH);
       }
       if (p2_C == 1) {
-        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);digitalWrite(Y[6], LOW);
-        digitalWrite(R[3], HIGH);digitalWrite(R[5], HIGH);digitalWrite(R[6], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[5], LOW); digitalWrite(Y[6], LOW);
+        digitalWrite(R[3], HIGH); digitalWrite(R[5], HIGH); digitalWrite(R[6], HIGH);
       }
       if (p3_A == 1) {
-        digitalWrite(Y[6], LOW);digitalWrite(Y[7], LOW);
-        digitalWrite(R[6], HIGH);digitalWrite(R[7], HIGH);
+        digitalWrite(Y[6], LOW); digitalWrite(Y[7], LOW);
+        digitalWrite(R[6], HIGH); digitalWrite(R[7], HIGH);
       }
       if (p3_B == 1) {
         digitalWrite(Y[4], LOW);
@@ -1821,7 +1889,7 @@ switch (loading)
         digitalWrite(Y[4], HIGH);
       }
       if (p3_A == 1) {
-        digitalWrite(Y[3], HIGH);digitalWrite(Y[5], HIGH);
+        digitalWrite(Y[3], HIGH); digitalWrite(Y[5], HIGH);
       }
       if (p3_B == 1) {
         digitalWrite(Y[5], HIGH);
@@ -1836,9 +1904,9 @@ switch (loading)
     case 4:
       //if(p1_A==1){}
       if (p1_B == 1) {
-        digitalWrite(G[6], HIGH);digitalWrite(G[7], HIGH);
-        digitalWrite(Y[6], LOW);digitalWrite(Y[7], LOW);
-        digitalWrite(R[6], LOW);digitalWrite(R[7], LOW);
+        digitalWrite(G[6], HIGH); digitalWrite(G[7], HIGH);
+        digitalWrite(Y[6], LOW); digitalWrite(Y[7], LOW);
+        digitalWrite(R[6], LOW); digitalWrite(R[7], LOW);
       }
       if (p1_C == 1) {
         digitalWrite(G[7], HIGH);
@@ -1859,9 +1927,9 @@ switch (loading)
         digitalWrite(R[4], LOW);
       }
       if (p3_A == 1) {
-        digitalWrite(G[3], HIGH);digitalWrite(G[5], HIGH);
-        digitalWrite(Y[3], LOW);digitalWrite(Y[5], LOW);
-        digitalWrite(R[3], LOW);digitalWrite(R[5], LOW);
+        digitalWrite(G[3], HIGH); digitalWrite(G[5], HIGH);
+        digitalWrite(Y[3], LOW); digitalWrite(Y[5], LOW);
+        digitalWrite(R[3], LOW); digitalWrite(R[5], LOW);
       }
       if (p3_B == 1) {
         digitalWrite(G[5], HIGH);
@@ -1871,53 +1939,53 @@ switch (loading)
       //if(p3_C==1){}
       prioritisation = 5;
       break;
-      
-      //idle state, cekani na ukonceni priority:
+
+    //idle state, cekani na ukonceni priority:
     case 5:
-      
+
       break;
-      //navazani zpet z priority do bezneho provozu:
+    //navazani zpet z priority do bezneho provozu:
     case 6:
-      if(p1_A || p1_B || p1_C){
-        digitalWrite(SG3,HIGH);digitalWrite(SG4,HIGH);AtoC = 0; BtoA = 0; CtoB = 0;waiting_A=0;trl01 = millis();traffic_light=1;prioritisation = 8;
+      if (p1_A || p1_B || p1_C) {
+        digitalWrite(SG3, HIGH); digitalWrite(SG4, HIGH); AtoC = 0; BtoA = 0; CtoB = 0; waiting_A = 0; trl01 = millis(); traffic_light = 1; prioritisation = 8;
       }
-      if(p2_A || p2_B || p2_C){
-        digitalWrite(Y[3],HIGH);tp7=millis();prioritisation = 7;
+      if (p2_A || p2_B || p2_C) {
+        digitalWrite(Y[3], HIGH); tp7 = millis(); prioritisation = 7;
       }
-      if(p3_A || p3_B || p3_C){
-        digitalWrite(Y[6],HIGH);tp7=millis();prioritisation = 7;
+      if (p3_A || p3_B || p3_C) {
+        digitalWrite(Y[6], HIGH); tp7 = millis(); prioritisation = 7;
       }
       break;
 
     case 7:
-      tp8=millis();
-      if(tp8-tp7>2000){
-        if(p2_A || p2_B || p2_C){
-        digitalWrite(Y[3],LOW);digitalWrite(R[3],LOW);AtoC = 0; BtoA = 0; CtoB = 0;waiting_B=0;trl31=millis();traffic_light=4;prioritisation = 8;
-          }
-        if(p3_A || p3_B || p3_C){
-        digitalWrite(Y[6],LOW);digitalWrite(R[6],LOW);AtoC = 0; BtoA = 0; CtoB = 0;waiting_C=0;trl81=millis();traffic_light=8;prioritisation = 8;
-          }
+      tp8 = millis();
+      if (tp8 - tp7 > 2000) {
+        if (p2_A || p2_B || p2_C) {
+          digitalWrite(Y[3], LOW); digitalWrite(R[3], LOW); AtoC = 0; BtoA = 0; CtoB = 0; waiting_B = 0; trl31 = millis(); traffic_light = 4; prioritisation = 8;
         }
+        if (p3_A || p3_B || p3_C) {
+          digitalWrite(Y[6], LOW); digitalWrite(R[6], LOW); AtoC = 0; BtoA = 0; CtoB = 0; waiting_C = 0; trl81 = millis(); traffic_light = 8; prioritisation = 8;
+        }
+      }
       break;
-//konecny stav
-    case 8: 
-      clck_down=1;clck_up=0;sec=10;xx=0;mins=0;min_pos=10;sec_pos2=10; 
-        
-      priority = 0; lcd.clear();refresh=1; //reset displeje
-      time_loading = 0; load_pos = 0;loading_state=2;
-      waiting_A=0;waiting_B=0;waiting_C=0;finish_A=0;
+    //konecny stav
+    case 8:
+      clck_down = 1; clck_up = 0; xx = 0; mins = 0; min_pos = 10; sec_pos2 = 10;
+      time_loading = 0; load_pos = 0; loading_state = 2;
+      sec=0; //proměnná byla použita pro dobu trvani prioritizace -> nutne vynulovat
+      waiting_A = 0; waiting_B = 0; waiting_C = 0; 
+      finish_A = 0;finish_B = 0;finish_C = 0;
       aa = 0; bb = 0; cc = 0; ee = 0; //reset vypisu
       p1_A = 0; p1_B = 0; p1_C = 0; //reset nastaveni priority
       p2_A = 0; p2_B = 0; p2_C = 0;
       p3_A = 0; p3_B = 0; p3_C = 0;
-      completed_A=0;completed_B=0;completed_C=0;
-      
+      completed_A = 0; completed_B = 0; completed_C = 0;
+      priority = 0; lcd.clear(); refresh = 1;//reset displeje
       //kdyz nastane prioritizace behem nouzoveho stavu je treba znovu vypsat:
-      if(emergency==1){
+      if (emergency == 1) {
         lcd.setCursor ( 4, 0 ); lcd.print("NOUZOVY STAV");
-        }
-        prioritisation = 5;
+      }
+      prioritisation = 5;
       break;
   }
 
@@ -1939,7 +2007,7 @@ switch (loading)
     }
   }
 
-  //podminka pro umozneni spusteni prechodu: (muselo být: spusteno tlacitko prechodu, musi být: rizeni v jednicce(smerA), instrukce pro směr A musely být vykonány, prechod musel byt dokoncen minimalne pred 10s)
+  //podminka pro umozneni spusteni prechodu: (muselo být: spusteno tlacitko prechodu, musi být: rizeni v jednicce(smerA), instrukce pro směr A musely být vykonány, prechod musel byt dokoncen minimalne pred 10s a nesmí probíhat prioritizace)
   if (crossing_active == 1 && traffic_light == 1 && cross == 6 && finish_A == 1 && finish_cross4 == 0 && priority == 0) {
     tc01 = millis();
     cross = 0;
@@ -1975,7 +2043,7 @@ switch (loading)
 
       digitalWrite(SG12, HIGH);
       digitalWrite(SR12, LOW);
-      if (priority!=0) {
+      if (priority != 0) {
         cross = 3; //preskoceni zelene na prechodu kdyz projizdi IZS
       }
       tc22 = millis();
@@ -2034,4 +2102,3 @@ switch (loading)
       break;
   }
 }
-```
