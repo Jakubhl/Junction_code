@@ -6,7 +6,7 @@ LiquidCrystal_I2C lcd(0x27, 20, 4);
 
 #include <Inputs.h>
 //Definujte analogove piny vyuzite ind senzorem (1) a IR cidly (6), 
-//prahovou hodnotu detekce IR cidly, prahovou hodnotu detekce indukcnim cidlem, ochrannou dobu  mezi rozepnutim/ sepnutim tlacitka, ochrannou dobu  mezi prerusenim/ neprerusenim senzoru,
+//prahovou hodnotu detekce IR cidly, prahovou hodnotu detekce indukcnim cidlem, ochrannou dobu  mezi rozepnutim/ sepnutim tlacitka, ochrannou dobu  mezi prerusenim/ neprerusenim senzoru v milisekundách,
 //piny: modraLED indukcniho senzoru, 7.,8.bila led na OP, piny mikrospinacu na OP(8) + na prechodu (2)
 Inputs inputs(A7,A4,A1,A2,A3,A5,A6,
 100,550,200,500,
@@ -14,7 +14,7 @@ Inputs inputs(A7,A4,A1,A2,A3,A5,A6,
 
 #include <Traffic_light_control.h>
 //Definujte zelene LED (6), zlute LED (6), cervene LED (6), doplnujici sipky (3), cervena a zelena signalizace pro chodce (2), 
-//dobu trvani zlute, cervene, zlute a cervene soucasne, zelene na prechodu a interval proti opakovani prechodu
+//dobu trvani zlute, cervene, zlute a cervene soucasne, zelene na prechodu a interval proti opakovani prechodu v milisekundách
 Traffic_light_control trlc(
 4,52,49,27,31,24,5,53,47,28,30,25,6,50,48,26,32,23,
 51,46,29,8,7,3000,1000,2000,5000,10000);
@@ -24,32 +24,35 @@ Traffic_light_control trlc(
 VO vo(22,44,45,A0,200,4000);
 
 
-//vlastně definované charaktery pro načítání na displeji
+//vlastní definované charaktery pro načítání na displeji
 byte L_1[8] = {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000,};
 byte L_2[8] = {0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000, 0b11000,};
 byte L_3[8] = {0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100, 0b11100,};
 byte L_4[8] = {0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110, 0b11110,};
 byte L_5[8] = {0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111, 0b11111,};
 
-bool dispA; //resety vypisu (A,B,C,nic)
+//resety vypisu (smer A,B,C,zadny)
+bool dispA; 
 bool dispB;
 bool dispC;
-bool disp_no_dir; 
+bool disp_no_dir;
+//ochrany pri prechodu mezi stavy idle <-> emergency <-> priority...
 bool done_config_idle;
 bool def_off_LED;
 bool disp_idle_to_emergency;
 bool disp_idle;
 bool disp_priority;
 bool stop_loading;
-
+//loading bar
 byte loading_state = 2;
 byte load_pos;
-
 byte loading = 1;
+//ulozeni predesle hodnoty sekund pro porovnavani
 byte sec2;
 byte tens=10;
 byte sec;
 byte mins;
+//switche odpoctu, pricitani
 byte clck_up;
 byte clck_down=1;
 byte sec_pos;
@@ -59,27 +62,27 @@ int countdown = 10;
 int time_loading;
 unsigned long t_l1;
 unsigned long t_l2;
-
-byte priority; //tri stavy
-
+//tri stavy priority (3 smery)
+byte priority;
+//blikani zlute pri idle stavu
 byte flashing;
 bool Reset;
-
+//vypocty intervalu, vzhledem k desetinnym mistum floaty...
 float percentage_A;float percentage_B;float percentage_C;
 byte sum;
-
 float count_A_f;float count_B_f;float count_C_f;
 int interval_A;
 int interval_B;
 int interval_C;
 float interval_A_f;float interval_B_f;float interval_C_f;
 
-
+//refresh => pri pozadavku prepsani nejake hodnoty na displeji
 bool refresh = true;
 bool refresh_ready = true;
+//pro kontrolni interval aby se refresh nezacyklil a displej se stihal synchronizovat
 unsigned long ref_1;
 unsigned long ref_2;
-
+//intervaly blikani zlute pri dile stavu
 unsigned long fl_t1;
 unsigned long fl_t2;
 unsigned long fl_t3;
@@ -89,7 +92,7 @@ unsigned long tc1;
 unsigned long tc2;
 
 void setup() {
-
+//nataveni displeje, ovladace a aktivace knihoven
   lcd.init();
   lcd.backlight();
   Serial.begin(9600);
@@ -98,7 +101,7 @@ void setup() {
   trlc.PinSetup();
   inputs.PinSetup();
   vo.PinSetup();
-
+//pri zapnuti modelu nutne rozsviti na prechodu
   digitalWrite(trlc.G12, HIGH);
   digitalWrite(trlc.SR12, HIGH);
   
@@ -141,8 +144,9 @@ if(refresh_ready==false){
     sum = count_A + count_B + count_C;
 
     //DIRECTION A:------------------------------------------------------------------------------------------------------
-    count_A_f = count_A;
-    if (sum != 0) { //osetreni pro deleni nulou
+    count_A_f = count_A; 
+    //osetreni pro deleni nulou
+    if (sum != 0) {
       percentage_A = (count_A_f / sum) * 100;
     }
     else {
@@ -158,7 +162,7 @@ if(refresh_ready==false){
     if (trlc.traffic_light == 1 && emergency == 0 ) {
       
       if (dispA==true && sec != 0) {
-        sec += (interval_A - countdown); //nutné zde, před počítáním cooldownu
+        sec += (interval_A - countdown); //nutné zde, před počítáním countdownu
       }
    
       countdown = countdown + (interval_A - countdown); //nutné počítat zde, až po předešlém příkazu
@@ -166,7 +170,7 @@ if(refresh_ready==false){
         if (sec == 0 && countdown != 0 && dispA==false) { //proměnná dispA kvůli opakování odpočítávání při registraci vozidla v daném směru
           load_pos = 0;  
           tens = 10;
-          sec = countdown - 1; //-1 kvuli desetinam
+          sec = countdown - 1; //-1 sekunda kvuli desetinam
           lcd.setCursor ( 0, 3 );
           lcd.print("                    ");
            dispB = false; dispC = false; dispA = true;
@@ -482,17 +486,14 @@ if(refresh_ready==false){
         lcd.setCursor ( sec_pos, 2 ); lcd.print(sec);
       }
     sec2 = sec;} 
-
     //zakomentovana moznost zobrazovani desetin: (sec_pos2 zabrana!)
     //if(tens2!=tens){lcd.setCursor ( 6, 2 );lcd.print("  ");
     //if(tens<10){sec_pos2=7;}else{sec_pos2=6;}lcd.setCursor ( sec_pos2, 2 );lcd.print(tens);}
     //tens2=tens;
   }
   
-  
-  
   if (emergency > 1) {
-    lcd.setCursor ( 0, 0 ); lcd.print("                    ");//aby byl zachován loading bar nečistím celý displej
+    lcd.setCursor ( 0, 0 ); lcd.print("                    ");//aby byl zachován loading bar nečistím celý displej pouze 3 radky
     lcd.setCursor ( 0, 1 ); lcd.print("                    ");
     lcd.setCursor ( 0, 2 ); lcd.print("                    ");
     trlc.reset_priority_all=1;
@@ -555,13 +556,10 @@ if (trlc.traffic_light == 4 && stop_loading ==true) {
   }
 
   //uvedení do necinneho stavu------------------------------------------------------------------------------------------------------
-  //tlacitka 7 a 8, ktera uvadi do emergency a idle stavu
   inputs.Sequence_in_idle();
   
-
   if (idle == 1) {
     done_config_idle = false; //nulovani jednoho opakovani prikazu u idle=0
-    
       if (inputs.crossing_active == false) {
         if(def_off_LED==false){
         trlc.crosswalk_off=1;def_off_LED=true;}
@@ -571,10 +569,10 @@ if (trlc.traffic_light == 4 && stop_loading ==true) {
       trlc.traffic_light = 12; Reset = true; lcd.clear(); lcd.setCursor(4, 1 ); lcd.print("NECINNY STAV");
       fl_t1 = millis(); flashing = true; disp_idle = true;
     }
-    //dve promenne pro ochranu opakovani z duvodu cekani na prechod (d)
+    //dve promenne pro ochranu opakovani z duvodu cekani na prechod
   }
 
-  //blikání žluté signalizace------------------------------------------------------------------------------------------------------
+  //blikání žluté signalizace (pri idle stavu)------------------------------------------------------------------------------------------------------
 
   switch (flashing) {
     case 0:
